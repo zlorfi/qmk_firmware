@@ -1,14 +1,19 @@
 #include QMK_KEYBOARD_H
 
 void matrix_init_user(void){
-	rgblight_enable();
-	rgblight_sethsv(229, 70, 194);
+	#ifdef RGBLIGHT_ENABLE 
+		#ifndef LAYER_SWITCH_RGB
+			rgblight_enable();
+			rgblight_sethsv(229, 70, 194);
+			rgblight_mode(2);
+		#endif
+	#endif
 }
 
 //Unicode keymaps
-void eeconfig_init_user(void) {
-  set_unicode_input_mode(UC_OSX);
-}
+// void eeconfig_init_user(void) {
+//   set_unicode_input_mode(UC_OSX);
+// }
 
 enum custom_keycodes {
   MAC_AE = SAFE_RANGE,
@@ -18,17 +23,42 @@ enum custom_keycodes {
 	MAC_EURO
 };
 
-uint32_t layer_state_set_user(uint32_t state) {
-    switch (biton32(state)) {
-    case 0:
-	    rgblight_sethsv(229, 70, 149);
-      break;
-    case 1:
-      rgblight_setrgb (0x66,  0x66, 0x00);
-      break;
-    }
-  return state;
-}
+#ifdef RGBLIGHT_ENABLE 
+  #ifdef LAYER_SWITCH_RGB
+		void matrix_scan_user(void)
+		{  // runs frequently to update info
+				uint8_t layer = biton32(layer_state); // get current layer
+				static uint8_t current_layer; // check historic layer
+				static bool has_layer_changed = true;
+				// static, so it is kept the same between calls
+				// defaults to true, so that it runs once to initially set the light
+
+				if (layer != current_layer)
+				{
+						has_layer_changed = true;
+						current_layer = layer; // update layer information
+				}
+				// Check for layer change, and apply color if its changed since last check
+				if (has_layer_changed)
+				{
+						// change backlight based on layer.  These should be numbers or whatever you defined the layers as
+						switch (layer)
+						{
+								case 0:
+									rgblight_sethsv(229, 70, 149);
+									break;
+								case 1:
+									rgblight_setrgb (0x66,  0x66, 0x00);
+									break;
+								// default:
+								//   rgblight_sethsv(229, 70, 149);
+								//   break;
+						}
+						has_layer_changed = false;
+				}
+		};
+	#endif
+#endif
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 	[0] = LAYOUT_ortho_5x15(
@@ -39,10 +69,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 		KC_LCTL, KC_LALT, KC_LGUI, MO(1), KC_SPC, KC_SPC, KC_LEFT, KC_DOWN, KC_RGHT, KC_SPC, KC_SPC, MO(1), KC_NO, KC_NO, KC_NO\
 		),
 	[1] = LAYOUT_ortho_5x15(
-		KC_NO, KC_VOLD, KC_VOLU, KC_MUTE, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,\
+		KC_NO, KC_VOLD, KC_VOLU, KC_MUTE, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_DEL,\
 		KC_NO, KC_NO, KC_NO, MAC_EURO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, MAC_UE, KC_NO, MAC_OE, KC_NO, KC_NO,\
 		KC_NO, MAC_AE, MAC_SS, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,\
-		KC_TRNS, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_TRNS, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_TRNS,\
+		KC_TRNS, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, RGB_TOG, KC_TRNS, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_TRNS,\
 		KC_NO, KC_NO, KC_NO, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_NO, KC_NO, KC_NO\
 		)
 };
