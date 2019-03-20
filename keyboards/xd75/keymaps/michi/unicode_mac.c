@@ -1,0 +1,5 @@
+#define MAC_AE UC(L'ä')
+#define MAC_OE UC(L'ö')
+#define MAC_SS UC(L'ß')
+#define MAC_UE UC(L'ü')
+#define MAC_EUR UC(L'€')
