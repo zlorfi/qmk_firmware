@@ -1,4 +1,4 @@
- /* Copyright 2015-2017 Christon DeWan
+/* Copyright 2015-2017 Jack Humbert
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,165 +15,120 @@
  */
 
 #include QMK_KEYBOARD_H
-// #include "xtonhasvim.h"
-#include "fancylighting.h"
 
-/************************************
- * states
- ************************************/
-
-#define ___x___ KC_NO
+extern keymap_config_t keymap_config;
 
 enum layers {
-  _QWERTY,
+  _QWERTZ,
   _LOWER,
   _RAISE,
-  _ADJUST
+  _ADJUST,
+  _FN
 };
 
-enum keymap_keycodes {
-  RAISE = SAFE_RANGE,
-  LOWER
+enum keycodes {
+  QWERTZ = SAFE_RANGE,
+  LOWER,
+  RAISE,
+  FN
 };
-
-/************************************
- * keymaps!
- ************************************/
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
-/* Qwerty
+/* Qwertz
  * ,-----------------------------------------------------------------------------------.
- * | ESC  |   Q  |   W  |   E  |   R  |   T  |   Y  |   U  |   I  |   O  |   P  | Bksp |
+ * | Tab  |   Q  |   W  |   E  |   R  |   T  |   Z  |   U  |   I  |   O  |   P  | Bksp |
  * |------+------+------+------+------+-------------+------+------+------+------+------|
- * | TAB  |   A  |   S  |   D  |   F  |   G  |   H  |   J  |   K  |   L  |   ;  |  "   |
+ * | Esc  |   A  |   S  |   D  |   F  |   G  |   H  |   J  |   K  |   L  |   ;  | Enter|
  * |------+------+------+------+------+------|------+------+------+------+------+------|
- * | Shift|   Z  |   X  |   C  |   V  |   B  |   N  |   M  |   ,  |   .  | Up   |Enter |
+ * | Shift|   Y  |   X  |   C  |   V  |   B  |   N  |   M  |   ,  |   .  | Up   | '    |
  * |------+------+------+------+------+------+------+------+------+------+------+------|
- * | FN   | Ctrl | Alt  | GUI  |Lower*|    Space    |Raise*| /    | Left | Down | Right|
+ * | FN   | Ctrl | Alt  | GUI  |Lower |    Space    |Raise | /    | Left | Down |Right |
  * `-----------------------------------------------------------------------------------'
- *
- * - Ctrl acts as Esc when tapped.
- * - Holding ; switches to movement layer.
- * - Raise and Lower are one-shot layers.
  */
-[_QWERTY] = LAYOUT_planck_mit(
-    KC_ESC,        KC_Q,    KC_W,    KC_E,    KC_R,   KC_T,   KC_Z,    KC_U,    KC_I,    KC_O,    KC_P,    KC_BSPC,
-    KC_TAB,        KC_A,    KC_S,    KC_D,    KC_F,   KC_G,   KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT,
-    KC_LSFT,       KC_Y,    KC_X,    KC_C,    KC_V,   KC_B,   KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_UP,   RSFT_T(KC_ENT),
-    LSFT(KC_LALT), KC_LCTL, KC_LALT, KC_LGUI, LOWER,      KC_SPC,      RAISE,   KC_SLSH, KC_LEFT, KC_DOWN, KC_RIGHT 
+[_QWERTZ] = LAYOUT_planck_mit(
+  KC_ESC,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Z,    KC_U,    KC_I,    KC_O,    KC_P,    KC_BSPC,
+  KC_TAB,  KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_ENT,
+  KC_LSFT, KC_Y,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_UP,   KC_QUOT,
+  FN,      KC_LCTL, KC_LALT, KC_LGUI, LOWER,       KC_SPC,       RAISE,   KC_SLSH, KC_DOWN, KC_DOWN, KC_RGHT
 ),
 
 /* Lower
  * ,-----------------------------------------------------------------------------------.
- * |  ~   |  F1  |  F2  |  F3  |  F4  |  F5  |  F6  |   _  |   +  |   {  |   }  | Bksp |
+ * |   ~  |   !  |   @  |   #  |   $  |   %  |   ^  |   &  |   *  |   (  |   )  | Del  |
  * |------+------+------+------+------+-------------+------+------+------+------+------|
- * |  Del |   !  |   @  |   #  |   $  |   %  |   ^  |   &  |   *  |   (  |   )  |  |   |
+ * |      |  F1  |  F2  |  F3  |  F4  |  F5  |  F6  |   _  |   +  |   {  |   }  |  |   |
  * |------+------+------+------+------+------|------+------+------+------+------+------|
- * |      |  F7  |  F8  |  F9  |  F10 |  F11 |  F12 |      | Next | Vol- | Vol+ | Play |
+ * |      |  F7  |  F8  |  F9  |  F10 |  F11 |  F12 |      |      |      | Vol+ |      |
  * |------+------+------+------+------+------+------+------+------+------+------+------|
- * |      | Bail |      |      |      |             |      |      |      | Bail |      |
+ * |      |      |      |      |      |             |      |      | Next | Vol- | Play |
  * `-----------------------------------------------------------------------------------'
  */
 [_LOWER] = LAYOUT_planck_mit(
-    KC_TILD, KC_F1,       KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_UNDS, KC_PLUS, KC_LCBR, KC_RCBR,     KC_BSPC,
-    KC_DEL,  KC_EXLM,     KC_AT,   KC_HASH, KC_DLR,  KC_PERC, KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN,     KC_PIPE,
-    _______, KC_F7,       KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,  ___x___, ___x___, ___x___, ___x___,     KC_ENT,
-    _______, TO(_QWERTY), _______, _______, _______,      KC_BSPC,     _______, _______, _______, TO(_QWERTY), ___x___
+  KC_TILD, KC_EXLM, KC_AT,   KC_HASH, KC_DLR,  KC_PERC, KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, KC_DEL,
+  _______, KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_UNDS, KC_PLUS, KC_LCBR, KC_RCBR, KC_PIPE,
+  _______, KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,  _______, _______, _______, KC_VOLU, _______,
+  _______, _______, _______, _______, _______,     _______,      _______, _______, KC_MNXT, KC_VOLD, KC_MPLY
 ),
 
 /* Raise
  * ,-----------------------------------------------------------------------------------.
- * |   `  |  F1  |  F2  |  F3  |  F4  |  F5  |  F6  |   -  |   =  |   [  |   ]  | Bksp |
+ * |   `  |   1  |   2  |   3  |   4  |   5  |   6  |   7  |   8  |   9  |   0  | Del  |
  * |------+------+------+------+------+-------------+------+------+------+------+------|
- * |  Del |   1  |   2  |   3  |   4  |   5  |   6  |   7  |   8  |   9  |   0  |  \   |
+ * |      |   4  |   5  |   6  |      |      |      |   -  |   =  |   [  |   ]  |  \   |
  * |------+------+------+------+------+------|------+------+------+------+------+------|
- * |      |  F7  |  F8  |  F9  |  F10 |  F11 |  F12 |      | Next | Vol- | Vol+ | Play |
+ * |      |   7  |   8  |   9  |      |      |      |      |      |      | Vol+ |      |
  * |------+------+------+------+------+------+------+------+------+------+------+------|
- * |      | Bail |      |      |      |             |      |      |      | Bail |      |
+ * |      |      |      |   0  |      |             |      |      | Next | Vol- | Play |
  * `-----------------------------------------------------------------------------------'
  */
 [_RAISE] = LAYOUT_planck_mit(
-    KC_GRV,  KC_F1,       KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_MINS, KC_EQL,  KC_LBRC, KC_RBRC,     KC_BSPC,
-    KC_DEL,  KC_1,        KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0,        KC_BSLS,
-    _______, KC_F7,       KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,  ___x___, ___x___, ___x___, ___x___,     KC_ENT,
-    _______, TO(_QWERTY), _______, _______, _______,     KC_BSPC,      _______, _______, _______, TO(_QWERTY), ___x___
+  KC_GRV,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_DEL,
+  _______, KC_4,    KC_5,    KC_6,    _______, _______, _______, KC_MINS, KC_EQL,  KC_LBRC, KC_RBRC, KC_BSLS,
+  _______, KC_7,    KC_8,    KC_9,    _______, _______, _______, _______, _______, _______, KC_VOLU, _______,
+  _______, _______, _______, KC_0,    _______,     _______,      _______, _______, KC_MNXT, KC_VOLD, KC_MPLY
 ),
 
-
 /* Adjust (Lower + Raise)
- * ,-------------------------------------------------------------------------------------.
- * |RGBPlain| Reset|      |      |      |      |      |      |      |      |      |  Del |
- * |--------+------+------+------+------+-------------+------+------+------+------+------|
- * |RGBMode-|      |      |      |      |      |      |      |      |      |      |Lite+ |
- * |--------+------+------+------+------+------|------+------+------+------+------+------|
- * |RGBMode+|      |      |      |      |      |      | Next | Vol- | Vol+ | Play |Lite- |
- * |--------+------+------+------+------+------+------+------+------+------+------+------|
- * |  RGB   | Bail |      |      |      |             |      |      |      | Bail |      |
- * `-------------------------------------------------------------------------------------'
+ * ,-----------------------------------------------------------------------------------.
+ * |      | Reset|      |      |      |      |      |      |      |      |      |      |
+ * |------+------+------+------+------+-------------+------+------+------+------+------|
+ * | RGBT |      |      |      |      |      |      |      |      |      |      |      |
+ * |------+------+------+------+------+------|------+------+------+------+------+------|
+ * |      |      |      |      |      |      |      |      |      |      |      |      |
+ * |------+------+------+------+------+------+------+------+------+------+------+------|
+ * |      |      |      |      |      |             |      |      |      |      |      |
+ * `-----------------------------------------------------------------------------------'
  */
 [_ADJUST] = LAYOUT_planck_mit(
-    RGB_MODE_PLAIN,   RESET,       DEBUG,   _______, _______, _______, _______, _______, _______, _______, _______,     KC_DEL,
-    RGB_MODE_REVERSE, _______,     _______, _______, _______, _______, _______, _______, _______, _______, _______,     RGB_VAI,
-    RGB_MODE_FORWARD, _______,     _______, _______, _______, _______, _______, KC_MNXT, KC_VOLD, KC_VOLU, KC_MPLY,     RGB_VAD,
-    RGB_TOG,          TO(_QWERTY), _______, _______, _______,     _______,      _______, _______, _______, TO(_QWERTY), ___x___
+  _______, RESET,   _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
+  RGB_TOG, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
+  _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
+  _______, _______, _______, _______, _______,     _______,      _______, _______, _______, _______, _______
+),
+
+/* Function Layer
+ * ,-----------------------------------------------------------------------------------.
+ * |      |      |      |      |      |      |      |      |      |      |      |      |
+ * |------+------+------+------+------+-------------+------+------+------+------+------|
+ * | RGBT |      |      |      |      |      |      |      |      |      |      |      |
+ * |------+------+------+------+------+------|------+------+------+------+------+------|
+ * |      |      |      |      |      |      |      |      |      |      |      |      |
+ * |------+------+------+------+------+------+------+------+------+------+------+------|
+ * |      |      |      |      |      |             |      |      |      |      |      |
+ * `-----------------------------------------------------------------------------------'
+ */
+[_FN] = LAYOUT_planck_mit(
+  _______, RGB_M_P, RGB_M_B, RGB_M_R, RGB_M_SW, RGB_M_SN, RGB_M_K, RGB_M_X, RGB_M_G, _______,  _______, _______,
+  RGB_TOG, _______, _______, _______, _______,  _______,  _______, _______, _______, _______,  _______, _______,
+  _______, _______, _______, _______, _______,  _______,  _______, _______, _______, _______,  _______, _______,
+  _______, _______, _______, _______, _______,       _______,      _______, RGB_MOD, RGB_RMOD, RGB_HUI, RGB_HUD
 )
+
 };
 
-#define C_RED 0xFF, 0x00, 0x00
-#define C_GRN 0x00, 0xFF, 0x00
-#define C_BLU 0x00, 0x00, 0xFF
-
-#define C_YAN 0x00, 0xFF, 0xFF
-#define C_PRP 0x7A, 0x00, 0xFF
-#define C_ORG 0xFF, 0x93, 0x00
-
-/** Set just 4 LEDs closest to the user. Slightly less annoying to bystanders.*/
-void rgbflag(uint8_t r, uint8_t g, uint8_t b, uint8_t rr, uint8_t gg, uint8_t bb) {
-  LED_TYPE *target_led = user_rgb_mode ? shadowed_led : led;
-  for (int i = 0; i < RGBLED_NUM; i++)  {
-    switch (i) {
-    case 12: case 13:
-      target_led[i].r = r;
-      target_led[i].g = g;
-      target_led[i].b = b;
-      break;
-    case 8: case 9:
-      target_led[i].r = rr;
-      target_led[i].g = gg;
-      target_led[i].b = bb;
-      break;
-    default:
-      target_led[i].r = 0;
-      target_led[i].g = 0;
-      target_led[i].b = 0;
-      break;
-    }
-  }
-  rgblight_set();
-}
-
-void set_state_leds(void) {
-  if (rgblight_get_mode() == 1) {
-    switch (biton32(layer_state)) {
-    case _RAISE:
-      rgbflag(C_BLU, C_GRN);
-      break;
-    case _LOWER:
-      rgbflag(C_BLU, C_RED);
-      break;
-    case _ADJUST:
-      rgbflag(C_BLU, C_PRP);
-      break;
-    default: //  for any other layers, or the default layer
-      rgbflag(C_YAN, C_YAN);
-      break;
-    }
-  }
-}
-
-bool process_record_keymap(uint16_t keycode, keyrecord_t *record) {
-  switch(keycode) {
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+  switch (keycode) {
     case LOWER:
       if (record->event.pressed) {
         layer_on(_LOWER);
@@ -191,6 +146,16 @@ bool process_record_keymap(uint16_t keycode, keyrecord_t *record) {
       } else {
         layer_off(_RAISE);
         update_tri_layer(_LOWER, _RAISE, _ADJUST);
+      }
+      return false;
+      break;
+    case FN:
+      if (record->event.pressed) {
+        layer_on(_FN);
+        // update_tri_layer(_LOWER, _RAISE, _ADJUST);
+      } else {
+        layer_off(_FN);
+        // update_tri_layer(_LOWER, _RAISE, _ADJUST);
       }
       return false;
       break;
